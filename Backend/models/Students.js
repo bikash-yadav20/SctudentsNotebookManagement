@@ -1,0 +1,23 @@
+import mongoose from "mongoose";
+
+const studentSchema = new mongoose.Schema({
+  roll: { type: Number, unique: true },
+  name: { type: String, required: true },
+  class: { type: String, required: true },
+  section: { type: String, required: true },
+
+  notebookChecks: [
+    {
+      subject: { type: String, required: true },
+      checks: { type: [Boolean], required: true }, 
+      remarks: [
+        {
+          text: { type: String }, 
+          date: { type: Date, default: Date.now }
+        }
+      ]
+    }
+  ]
+});
+
+export default mongoose.model("Student", studentSchema);
