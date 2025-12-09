@@ -1,5 +1,4 @@
-// StudentsContext.jsx
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
 export const StudentsContext = createContext();
 
@@ -9,14 +8,24 @@ const StudentProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [credentetials, setCredentials] = useState(null);
 
+  useEffect(() => {
+    const storedCreds = localStorage.getItem("credentials")
+    if(storedCreds){
+      setCredentials(JSON.parse(storedCreds));
+      setIsLoggedIn(true);
+    }
+  })
+
   const login = (creds) => {
     setCredentials(creds);
     setIsLoggedIn(true);
+    localStorage.setItem("credentials", JSON.stringify(creds));
   }
 
   const logout =() => {
     setCredentials(null);
     setIsLoggedIn(false);
+    localStorage.removeItem("credentials");
   }
 
   return (
@@ -29,4 +38,4 @@ const StudentProvider = ({ children }) => {
   );
 };
 
-export default StudentProvider;   // ✅ default export
+export default StudentProvider;
