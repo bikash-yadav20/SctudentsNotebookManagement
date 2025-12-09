@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 const Students = () => {
   const [classes, setClasses] = useState([]);
@@ -12,6 +11,7 @@ const Students = () => {
   const [selectedSection, setSelectedSection] = useState("");
   const [selectedSession, setSelectedSession] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [activeSearch, setActivesearch ] = useState(false)
 
   const [subjects, setSubjects] = useState([]);
   const [activeSubjectIndex, setActiveSubjectIndex] = useState(null);
@@ -43,7 +43,8 @@ const Students = () => {
     )
       .then((res) => res.json())
       .then((data) => setStudents(data))
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      setActivesearch(true);
   };
 
   // Handle Check button for a student
@@ -54,7 +55,9 @@ const Students = () => {
       const subRes = await fetch(`${API_URL}/api/subjects/${student.class}`);
       const subjectsArray = await subRes.json();
 
-      const checksRes = await fetch(`${API_URL}/api/student/${student._id}/notebookChecks`);
+      const checksRes = await fetch(
+        `${API_URL}/api/student/${student._id}/notebookChecks`
+      );
       const savedChecks = checksRes.ok ? await checksRes.json() : [];
 
       const merged = subjectsArray.map((subj) => {
@@ -75,36 +78,36 @@ const Students = () => {
   };
 
   // Handle Submit for active subject
- const handleSubmit = async () => {
-  try {
-    const activeSubject = subjects[activeSubjectIndex];
+  const handleSubmit = async () => {
+    try {
+      const activeSubject = subjects[activeSubjectIndex];
 
-    const payload = {
-      subject: activeSubject.subject,
-      checks: activeSubject.checks,
-      remark: activeSubject.remark,
-      date: new Date().toISOString(),
-    };
+      const payload = {
+        subject: activeSubject.subject,
+        checks: activeSubject.checks,
+        remark: activeSubject.remark,
+        date: new Date().toISOString(),
+      };
 
-    const res = await fetch(
-      `${API_URL}/api/student/${selectedStudent._id}/notebookChecks`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload), // send only one subject
-      }
-    );
+      const res = await fetch(
+        `${API_URL}/api/student/${selectedStudent._id}/notebookChecks`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload), // send only one subject
+        }
+      );
 
-    if (!res.ok) throw new Error("Failed to save notebook checks");
-    await res.json();
+      if (!res.ok) throw new Error("Failed to save notebook checks");
+      await res.json();
 
-    alert("Notebook check saved!");
-    setActiveSubjectIndex(null); // go back to subject list
-  } catch (err) {
-    console.error(err);
-    alert("Error saving notebook checks");
-  }
-};
+      alert("Notebook check saved!");
+      setActiveSubjectIndex(null); // go back to subject list
+    } catch (err) {
+      console.error(err);
+      alert("Error saving notebook checks");
+    }
+  };
 
   return (
     <div className="p-6">
@@ -160,6 +163,18 @@ const Students = () => {
         >
           Search
         </button>
+        {( activeSearch &&
+        <div className="flex items-center space-x-2 bg-gray-100  rounded-lg shadow-md w-full max-w-md">
+          <input
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="text"
+            placeholder="Search..."
+          />
+          <button className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            Search
+          </button>
+        </div>
+        )}
       </div>
 
       <div className="mt-6">
@@ -217,7 +232,9 @@ const Students = () => {
         {/* Active subject checklist */}
         {selectedStudent && activeSubjectIndex !== null && (
           <div className="mt-6 bg-white p-4 rounded shadow">
-            <h4 className="font-medium">{subjects[activeSubjectIndex].subject}</h4>
+            <h4 className="font-medium">
+              {subjects[activeSubjectIndex].subject}
+            </h4>
             <p className="text-sm text-gray-500">
               {subjects[activeSubjectIndex].date
                 ? `Last updated: ${new Date(
@@ -226,21 +243,23 @@ const Students = () => {
                 : "Not yet checked"}
             </p>
             <div className="flex gap-2 mb-2">
-              {subjects[activeSubjectIndex].checks.map((checked, checkIndex) => (
-                <label key={checkIndex} className="flex items-center gap-1">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => {
-                      const updated = [...subjects];
-                      updated[activeSubjectIndex].checks[checkIndex] =
-                        !updated[activeSubjectIndex].checks[checkIndex];
-                      setSubjects(updated);
-                    }}
-                  />
-                  Check {checkIndex + 1}
-                </label>
-              ))}
+              {subjects[activeSubjectIndex].checks.map(
+                (checked, checkIndex) => (
+                  <label key={checkIndex} className="flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => {
+                        const updated = [...subjects];
+                        updated[activeSubjectIndex].checks[checkIndex] =
+                          !updated[activeSubjectIndex].checks[checkIndex];
+                        setSubjects(updated);
+                      }}
+                    />
+                    Check {checkIndex + 1}
+                  </label>
+                )
+              )}
             </div>
             <input
               type="text"
@@ -278,4 +297,4 @@ const Students = () => {
   );
 };
 
-export default Students
+export default Students;
